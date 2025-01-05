@@ -1,0 +1,87 @@
+[
+  {
+    "nl": "ik",
+    "phoneticNl": "ɪk",
+    "en": ["I"]
+  },
+  {
+    "nl": "je",
+    "phoneticNl": "dʒe",
+    "en": ["you"]
+  },
+  {
+    "nl": "het",
+    "phoneticNl": "hɛt",
+    "en": ["the"]
+  },
+  {
+    "nl": "de",
+    "phoneticNl": "dɛ",
+    "en": ["the"]
+  },
+  {
+    "nl": "is",
+    "phoneticNl": "ɪz",
+    "en": ["is"]
+  },
+  {
+    "nl": "dat",
+    "phoneticNl": "dæt",
+    "en": ["that", "this"]
+  },
+  {
+    "nl": "een",
+    "phoneticNl": "ɛn",
+    "en": ["a", "one"]
+  },
+  {
+    "nl": "niet",
+    "phoneticNl": "nɪt",
+    "en": ["not"]
+  },
+  {
+    "nl": "en",
+    "phoneticNl": "ɛn",
+    "en": ["and"]
+  },
+  {
+    "nl": "wat",
+    "phoneticNl": "wɑt",
+    "en": ["what"]
+  },
+  {
+    "nl": "van",
+    "phoneticNl": "væn",
+    "en": ["of"]
+  },
+  {
+    "nl": "we",
+    "phoneticNl": "we",
+    "en": ["we"]
+  },
+  {
+    "nl": "in",
+    "phoneticNl": "ɪn",
+    "en": ["in"]
+  },
+  {
+    "nl": "ze",
+    "phoneticNl": "ze",
+    "en": ["they", "she"]
+  },
+  {
+    "nl": "op",
+    "phoneticNl": "ɑp",
+    "en": ["on", "in"]
+  },
+  {
+    "nl": "te",
+    "phoneticNl": "tɛ",
+    "en": ["to", "too"]
+  },
+  {
+    "nl": "hij",
+    "phoneticNl": "hɪj",
+    "en": ["he"]
+  }
+]
