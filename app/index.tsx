@@ -1,16 +1,17 @@
 import FailureFeedback from "@/components/FailureFeedback";
 import LanguageCard from "@/components/LanguageCard";
+import Statistics from "@/components/Statistics";
 import SuccessFeedback from "@/components/SuccessFeedback";
 import { Colors } from "@/constants/Colors";
 import { getTranslation } from "@/utils/getTranslations";
+import { saveResult } from "@/utils/saveResult";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Stack } from "expo-router";
-import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { useEffect, useState } from "react";
+import { View } from "react-native";
 
 export default function NotFoundScreen() {
   const [currentWord, setCurrentWord] = useState(getTranslation());
-
-  console.log(currentWord);
 
   const [isSuccessFeedbackVisible, setIsSuccessFeedbackVisible] =
     useState(false);
@@ -18,21 +19,21 @@ export default function NotFoundScreen() {
   const [isFailureFeedbackVisible, setIsFailureFeedbackVisible] =
     useState(false);
 
-  const onSubmitTranslation = (input: string) => {
+  const onSubmitTranslation = async (input: string) => {
     const parsedInput = input.toLowerCase().trim();
+    const isCorrect = currentWord.en.includes(parsedInput);
 
-    if (currentWord.en.includes(parsedInput)) {
-      setIsSuccessFeedbackVisible(true);
-    } else {
-      setIsFailureFeedbackVisible(true);
-    }
+    setIsSuccessFeedbackVisible(isCorrect);
+    setIsFailureFeedbackVisible(!isCorrect);
+
+    await saveResult(isCorrect, currentWord);
 
     setTimeout(() => {
       setIsSuccessFeedbackVisible(false);
       setIsFailureFeedbackVisible(false);
 
       setCurrentWord(getTranslation());
-    }, 2000);
+    }, 1200);
   };
 
   const isAnyFeedbackOpen =
@@ -55,51 +56,37 @@ export default function NotFoundScreen() {
       )}
 
       {!isAnyFeedbackOpen && (
-        <View style={styles.container}>
-          <View style={styles.cardOuterContainer}>
-            <View style={styles.absoluteBackground} />
-            <View style={styles.cardContainer}>
-              <LanguageCard
-                word={currentWord.nl}
-                phonetic={currentWord.phoneticNl}
-                onSubmit={onSubmitTranslation}
-              />
-            </View>
-          </View>
+        <View
+          style={{
+            width: "100%",
+            minHeight: "100%",
+            position: "relative",
+          }}
+        >
+          <View
+            style={{
+              position: "absolute",
+              backgroundColor: Colors.indigo,
+              opacity: 0.5,
+              top: 0,
+              left: 0,
+              right: 0,
+              width: "100%",
+              height: 200,
+              borderBottomLeftRadius: 40,
+              borderBottomRightRadius: 40,
+            }}
+          />
+
+          <LanguageCard
+            word={currentWord.nl}
+            phonetic={currentWord.phoneticNl}
+            onSubmit={async (input) => await onSubmitTranslation(input)}
+          />
+
+          <Statistics />
         </View>
       )}
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "flex-start",
-  },
-  cardOuterContainer: {
-    position: "relative",
-    display: "flex",
-    flexDirection: "row",
-    width: "100%",
-    gap: 10,
-  },
-  cardContainer: {
-    paddingTop: 80,
-    paddingHorizontal: 40,
-    width: "100%",
-  },
-  absoluteBackground: {
-    position: "absolute",
-    backgroundColor: Colors.indigo,
-    opacity: 0.5,
-    top: 0,
-    left: 0,
-    right: 0,
-    width: "100%",
-    height: 200,
-    borderBottomLeftRadius: 40,
-    borderBottomRightRadius: 40,
-  },
-});
