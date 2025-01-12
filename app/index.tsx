@@ -3,15 +3,46 @@ import LanguageCard from "@/components/LanguageCard";
 import Statistics from "@/components/Statistics";
 import SuccessFeedback from "@/components/SuccessFeedback";
 import { Colors } from "@/constants/Colors";
-import { getTranslation } from "@/utils/getTranslations";
 import { saveResult } from "@/utils/saveResult";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
-import { View } from "react-native";
+import { View, Text } from "react-native";
+import { useSQLiteContext } from "expo-sqlite";
+import { drizzle } from "drizzle-orm/expo-sqlite";
+import { eq } from "drizzle-orm";
+import * as schema from "@/db/schema";
+import { Translation } from "@/types/Translation";
 
 export default function NotFoundScreen() {
-  const [currentWord, setCurrentWord] = useState(getTranslation());
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db, { schema });
+
+  const getTranslation = async (): Promise<Translation> => {
+    const nlWords = await drizzleDb.select().from(schema.nlWords);
+    const nlWord = nlWords[0];
+
+    const englishTranslation = await drizzleDb
+      .select()
+      .from(schema.enTranslations)
+      .where(eq(schema.enTranslations.nlId, nlWord.id));
+
+    return {
+      nl: nlWord.nl,
+      en: englishTranslation.map((t) => t.en),
+      phoneticNl: nlWord.phoneticNl,
+    };
+  };
+
+  const [currentWord, setCurrentWord] = useState<Translation | null>(null);
+
+  useEffect(() => {
+    const run = async () => {
+      const translation = await getTranslation();
+      setCurrentWord(translation);
+    };
+
+    run();
+  }, []);
 
   const [isSuccessFeedbackVisible, setIsSuccessFeedbackVisible] =
     useState(false);
@@ -21,18 +52,18 @@ export default function NotFoundScreen() {
 
   const onSubmitTranslation = async (input: string) => {
     const parsedInput = input.toLowerCase().trim();
-    const isCorrect = currentWord.en.includes(parsedInput);
+    const isCorrect = currentWord!.en.includes(parsedInput);
 
     setIsSuccessFeedbackVisible(isCorrect);
     setIsFailureFeedbackVisible(!isCorrect);
 
-    await saveResult(isCorrect, currentWord);
+    await saveResult(isCorrect, currentWord!);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       setIsSuccessFeedbackVisible(false);
       setIsFailureFeedbackVisible(false);
 
-      setCurrentWord(getTranslation());
+      setCurrentWord(await getTranslation());
     }, 1200);
   };
 
@@ -44,14 +75,14 @@ export default function NotFoundScreen() {
       <Stack.Screen />
       {isSuccessFeedbackVisible && (
         <SuccessFeedback
-          word={currentWord.nl}
-          correctTranslations={currentWord.en}
+          word={currentWord!.nl}
+          correctTranslations={currentWord!.en}
         />
       )}
       {isFailureFeedbackVisible && (
         <FailureFeedback
-          word={currentWord.nl}
-          correctTranslations={currentWord.en}
+          word={currentWord!.nl}
+          correctTranslations={currentWord!.en}
         />
       )}
 
@@ -78,11 +109,17 @@ export default function NotFoundScreen() {
             }}
           />
 
-          <LanguageCard
-            word={currentWord.nl}
-            phonetic={currentWord.phoneticNl}
-            onSubmit={async (input) => await onSubmitTranslation(input)}
-          />
+          {currentWord ? (
+            <LanguageCard
+              word={currentWord.nl}
+              phonetic={currentWord.phoneticNl}
+              onSubmit={async (input) => await onSubmitTranslation(input)}
+            />
+          ) : (
+            <View>
+              <Text>Loading...</Text>
+            </View>
+          )}
 
           <Statistics />
         </View>
